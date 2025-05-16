@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cosmic Star Grid</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #0a0a1a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+        
+        .game-container {
+            background: radial-gradient(circle at center, #1a1a3a 0%, #0a0a1a 100%);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            border: 1px solid #4fc3f755;
+            position: relative;
+            overflow: hidden;
+            max-width: 400px;
+            width: 100%;
+        }
+        
+        .game-container::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(79, 195, 247, 0.1) 0%, transparent 70%);
+            animation: pulse 8s infinite alternate;
+            z-index: 0;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 0.1; }
+            100% { transform: scale(1.2); opacity: 0.3; }
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            grid-gap: 10px;
+            margin-bottom: 25px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .cell {
+            width: 55px;
+            height: 55px;
+            background: linear-gradient(135deg, #4fc3f7 0%, #1976d2 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.3);
+            transition: all 0.5s ease-out;
+        }
+        
+        .cell::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(25, 118, 210, 0.7) 0%, transparent 70%);
+            opacity: 0.6;
+        }
+        
+        .cell.fade-out {
+            transform: scale(0);
+            opacity: 0;
+        }
+        
+        .star {
+            font-size: 0px;
+            color: #FFD700;
+            text-shadow: 
+                0 0 10px #FFD700,
+                0 0 20px #FFD700,
+                0 0 30px #FFAB00;
+            transform: rotateY(0deg) scale(0.1);
+            animation: 
+                starGrow 0.8s forwards,
+                starGlow 2s infinite alternate 0.8s;
+            position: relative;
+            z-index: 2;
+        }
+        
+        @keyframes starGrow {
+            0% { 
+                transform: scale(0.1) rotateY(0deg);
+                font-size: 0px;
+                opacity: 0;
+            }
+            70% {
+                transform: scale(1.2) rotateY(180deg);
+                font-size: 40px;
+                opacity: 1;
+            }
+            100% { 
+                transform: scale(1) rotateY(360deg);
+                font-size: 32px;
+                opacity: 1;
+            }
+        }
+        
+        @keyframes starGlow {
+            0% { 
+                transform: scale(1) rotateY(0deg);
+                text-shadow: 
+                    0 0 10px #FFD700,
+                    0 0 20px #FFD700,
+                    0 0 30px #FFAB00;
+            }
+            100% { 
+                transform: scale(1.1) rotateY(20deg);
+                text-shadow: 
+                    0 0 15px #FFD700,
+                    0 0 25px #FFD700,
+                    0 0 35px #FFAB00;
+            }
+        }
+        
+        .controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 25px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .stars-input {
+            margin-bottom: 20px;
+            padding: 12px;
+            width: 140px;
+            text-align: center;
+            border: 2px solid #4fc3f7;
+            border-radius: 10px;
+            background-color: rgba(10, 10, 26, 0.8);
+            color: white;
+            font-size: 18px;
+            box-shadow: 0 0 15px rgba(79, 195, 247, 0.3);
+        }
+        
+        .go-button {
+            background: linear-gradient(135deg, #4fc3f7 0%, #1976d2 100%);
+            color: white;
+            border: none;
+            padding: 14px 30px;
+            font-size: 18px;
+            cursor: pointer;
+            border-radius: 10px;
+            width: 200px;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            text-transform: uppercase;
+            font-weight: bold;
+            letter-spacing: 1.5px;
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+        
+        .go-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: 0.5s;
+            z-index: -1;
+        }
+        
+        .go-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+        }
+        
+        .go-button:hover::before {
+            left: 100%;
+        }
+        
+        .go-button:active {
+            transform: translateY(0);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+        }
+        
+        .win-button {
+            background: linear-gradient(135deg, #FFD700 0%, #FF8C00 100%);
+            color: #1a1a3a;
+            border: none;
+            padding: 14px 30px;
+            font-size: 18px;
+            cursor: pointer;
+            border-radius: 10px;
+            width: 200px;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(255, 215, 0, 0.3);
+            font-weight: bold;
+            letter-spacing: 1px;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+        
+        .win-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            transition: 0.5s;
+            z-index: -1;
+        }
+        
+        .win-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(255, 215, 0, 0.4);
+            color: #0a0a1a;
+        }
+        
+        .win-button:hover::before {
+            left: 100%;
+        }
+        
+        .win-button:active {
+            transform: translateY(0);
+            box-shadow: 0 3px 10px rgba(255, 215, 0, 0.3);
+        }
+        
+        .rocket {
+            font-size: 20px;
+            animation: rocketPulse 1.5s infinite;
+        }
+        
+        @keyframes rocketPulse {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-3px); }
+            100% { transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="grid" id="grid">
+            <!-- 5x5 grid will be generated by JavaScript -->
+        </div>
+        
+        <div class="controls">
+            <input type="number" class="stars-input" id="stars-input" min="1" max="25" value="3" placeholder="Number of stars">
+            <button class="go-button" id="go-button">Go to signal</button>
+            <a href="https://1wbfqv.life/v3/2158/1win-mines?p=12bz" class="win-button" target="_blank">Go 1WIN<span class="rocket">🚀</span></a>
+        </div>
+    </div>
+
+    <script>
+        const grid = document.getElementById('grid');
+        const goButton = document.getElementById('go-button');
+        const starsInput = document.getElementById('stars-input');
+        
+        // Create 5x5 grid with random blue spots
+        function createGrid() {
+            grid.innerHTML = '';
+            for (let i = 0; i < 25; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+                cell.dataset.index = i;
+                
+                // Add random blue spots
+                const spotCount = Math.floor(Math.random() * 4) + 3;
+                for (let s = 0; s < spotCount; s++) {
+                    const spot = document.createElement('div');
+                    spot.style.position = 'absolute';
+                    const spotSize = Math.random() * 25 + 15;
+                    spot.style.width = `${spotSize}px`;
+                    spot.style.height = `${spotSize}px`;
+                    spot.style.background = `radial-gradient(circle, rgba(25, 118, 210, ${Math.random() * 0.5 + 0.4}) 0%, transparent 70%)`;
+                    spot.style.borderRadius = '50%';
+                    spot.style.top = `${Math.random() * 80}%`;
+                    spot.style.left = `${Math.random() * 80}%`;
+                    spot.style.filter = 'blur(1px)';
+                    cell.appendChild(spot);
+                }
+                
+                grid.appendChild(cell);
+            }
+        }
+        
+        // Show random stars with animation
+        function showStars(count) {
+            // Clear all stars first
+            document.querySelectorAll('.star').forEach(star => {
+                star.remove();
+            });
+            document.querySelectorAll('.cell').forEach(cell => {
+                cell.classList.remove('fade-out');
+            });
+            
+            // Get random positions
+            const positions = [];
+            while (positions.length < count) {
+                const randomPos = Math.floor(Math.random() * 25);
+                if (!positions.includes(randomPos)) {
+                    positions.push(randomPos);
+                }
+            }
+            
+            // Fade out only cells that will have stars
+            positions.forEach(pos => {
+                const cell = document.querySelector(`.cell[data-index="${pos}"]`);
+                cell.classList.add('fade-out');
+            });
+            
+            // After fade out, show stars
+            setTimeout(() => {
+                positions.forEach(pos => {
+                    const cell = document.querySelector(`.cell[data-index="${pos}"]`);
+                    cell.classList.remove('fade-out');
+                    
+                    const star = document.createElement('div');
+                    star.className = 'star';
+                    star.innerHTML = '★';
+                    cell.appendChild(star);
+                    
+                    // Random animation delay for variety
+                    star.style.animationDelay = `${Math.random() * 0.5}s`;
+                });
+            }, 500);
+        }
+        
+        // Initialize game
+        createGrid();
+        showStars(parseInt(starsInput.value));
+        
+        // Button click handler
+        goButton.addEventListener('click', function() {
+            const starCount = parseInt(starsInput.value) || 1;
+            const validCount = Math.min(Math.max(starCount, 1), 25);
+            starsInput.value = validCount;
+            showStars(validCount);
+        });
+    </script>
+</body>
+</html>
